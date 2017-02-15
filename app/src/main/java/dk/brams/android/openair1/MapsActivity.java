@@ -1,5 +1,6 @@
 package dk.brams.android.openair1;
 
+import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,14 +11,23 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.maps.android.SphericalUtil;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     public static final String TAG = "TBR:";
+    public static final int STEP_SIZE = 5;
 
     private GoogleMap mMap;
+    private LatLng mCenter=null;
+    private int mStep_direction=1;
+    private ArrayList<LatLng> mCoordList = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +39,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
+
+    public void addPosToCoordList(LatLng pos) {
+        mCoordList.add(pos);
+    }
 
     /**
      * Manipulates the map once available.
@@ -48,24 +62,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap.addMarker(new MarkerOptions().position(KRNO).title("KRNO Airport"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(KRNO));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(KRNO, 8));
 
+        /*
         String[] openAirCommands = {
             "V X=39:29.9 N 119:46.1W",
             "DA 10,270,290",
             "DA 7,290,320",
             "DA 10,320,200",
             "V D=-",
-            "DA 5,200,270",
-            "DB 55:15:34 N 014:24:53 E, 54:55:00 N 014:21:27 E"};
+            "DA 5,200,270"
+            };
+*/
 
-        String sampleCommand = "DA 10,270,290";
+        String[] openAirCommands = {
+                "V X=39:29.9 N 119:46.1W",
+                "DA 10,270,290",
+                "DA 7,290,320",
+                "DA 10,320,200",
+                "V D=-",
+                "DA 5,200,270"
+        };
 
-        String sampleCoord="55:15:34 N 014:24:53 E";
+        ArrayList<LatLng> coords = new ArrayList<>();
 
         for (String cmd: openAirCommands) {
-            parseCommand(cmd);
+            parseCommand(cmd, coords);
         }
+
+        PolygonOptions polyOptions = new PolygonOptions();
+        for (LatLng pos: mCoordList) {
+            polyOptions.add(pos);
+        }
+
+        polyOptions
+                .strokeColor(Color.RED)
+                .fillColor(Color.BLUE);
+
+        // Get back the mutable Polygon
+        Polygon polygon = mMap.addPolygon(polyOptions);
 
     }
 
@@ -105,46 +140,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public void parseCommand(String cmd) {
-        String pattern = "(\\w+)([\\w\\d\\s\\:\\.\\=\\+\\-\\,]*)";
+    public void parseCommand(String cmd, ArrayList<LatLng> coordList) {
 
-
-
+        // First pattern matches two groups - first is the command and the second is simply the rest of the line
+        String pattern = "(\\w+) ([\\w\\d\\s\\:\\.\\=\\+\\-\\,]*)";
         Pattern r = Pattern.compile(pattern);
-
         Matcher m = r.matcher(cmd);
 
         if (m.find()) {
-            // We should have the command in first group and the arguments etc in the second
-
+            // At this point, we should have the command and the arguments.
             String command = m.group(1).toUpperCase();
             String rest = m.group(2).trim().toUpperCase();
 
             Log.d(TAG, String.format("%s -> %s, %s", cmd, command, rest));
 
+            // Further processing of arguments depending on command
             switch (command) {
                 case "V":
                     // Variable Assignment Command
+                    // The pattern matches a variable name and the value argument from the rest of the line above
                     String assignPattern="([\\w]+)\\s*=([\\s\\w\\d\\:\\.\\+\\-]*)";
                     r = Pattern.compile(assignPattern);
                     m = r.matcher(rest);
-                    if (m.find()){
 
+                    if (m.find()){
                         if (m.group(1).equals("D")) {
+                            // Variable name D means this is a Direction assignment
                             Log.d(TAG, "parseCommand: "+String.format("Direction command, sign: %s", m.group(2)));
+                            if (m.group(2).equals("+")) {
+                                mStep_direction=1;
+                            } else {
+                                mStep_direction=-1;
+                            }
+
                         } else {
-                            // Position variable
+                            // A position variable assignment, any variable name us supported although I have only seen X used
                             Log.d(TAG, "parseCommand: "+String.format("Variable assignment. Variable: %s, rest: %s", m.group(1), m.group(2)));
 
                             LatLng pos = parseCoordinateString(rest);
                             if (pos != null) {
-                                Log.d(TAG, "parseCommand: pos: "+pos);
+                                Log.d(TAG, "parseCommand: setting mCenter to: "+pos);
+                                mCenter = pos;
                             } else {
-                                Log.d(TAG, "parseCommand: Might be some other kind of assignment...");
+                                // If we cannot parse this as a position, we need to look into this later
+                                Log.e(TAG, "parseCommand: Might be some other kind of assignment...");
                             }
                         }
 
                     } else {
+                        // We did not find anything useful in the arugument string after the name
                         Log.d(TAG, "parseCommand: Variable parsing error");
                     }
 
@@ -153,23 +197,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 case "DA":
                     // Draw Arc Command
-                    String directionPattern = "([\\d]+)\\s*\\,\\s*([\\d]+)\\s*\\,\\s*([\\d]+)";
-                    r = Pattern.compile(directionPattern);
+                    // Pattern matches three comma separated integer aruments
+                    String threeArgsPattern = "([\\d]+)\\s*\\,\\s*([\\d]+)\\s*\\,\\s*([\\d]+)";
+                    r = Pattern.compile(threeArgsPattern);
                     m = r.matcher(rest);
 
                     if (m.find()) {
-                        int radius = Integer.parseInt(m.group(1));
+                        int radius = Integer.parseInt(m.group(1))*1852;
                         int fromDeg = Integer.parseInt(m.group(2));
                         int toDeg = Integer.parseInt(m.group(3));
+
                         Log.d(TAG, String.format("Radius: %d, from: %d to %d", radius, fromDeg, toDeg));
+
+                        if (mCenter!=null) {
+                            double x,y;
+                            LatLng newPos;
+                            int degrees = fromDeg;
+                            int step = mStep_direction*STEP_SIZE;
+                            do {
+                                newPos = SphericalUtil.computeOffset(mCenter, radius, degrees);
+                                addPosToCoordList(newPos);
+                                degrees+=step;
+                                if (Math.abs(((degrees+360) %360)-toDeg)<=STEP_SIZE)
+                                    break;
+                            } while (true);
+
+                        }
                     } else {
-                            Log.d(TAG, "parseCommand: Draw arc parameters not recognized");
+                        // We did not find the expected three integers in the argument string
+                        Log.d(TAG, "parseCommand: Draw arc parameters not recognized");
                     }
                     break;
 
+                case "DP":
+                    // Define Point Command
+                    // Pattern matches a potential coordinate string
+                    String coordPattern="([\\d\\:\\. \\w]+)";
+                    r = Pattern.compile(coordPattern);
+                    m = r.matcher(rest);
+                    if (m.find()) {
+                        LatLng pos1 = parseCoordinateString(m.group(1));
+                        Log.d(TAG, "parseCommand: Got a coordinate : "+pos1);
+                        coordList.add(pos1);
+
+                    } else {
+                        Log.e(TAG, "parseCommand: Problem parsing DP argument" );
+                    }
+                    break;
+
+
+
                 case "DB":
                     Log.d(TAG, "parseCommand: Draw between command");
-                    String betweenPattern="([\\d\\:\\. \\w]+)\\s*,\\s*([\\d\\:\\. \\w]+)";
+                    // Pattern matches two possible coordinates separated by a comma
+                    String betweenPattern="([\\d\\:\\. \\w]+) *, *([\\d\\:\\. \\w]+)";
                     r = Pattern.compile(betweenPattern);
                     m = r.matcher(rest);
 
@@ -197,5 +278,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+    }
+
+    public double compasToMathDegrees(double compass) {
+        return (double) (((90-compass)+360)%360);
     }
 }
