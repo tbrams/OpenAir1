@@ -106,6 +106,7 @@
     <color name="Chartreuse">#7FFF00</color>
     <color name="LawnGreen">#7CFC00</color>
     <color name="MediumSlateBlue">#7B68EE</color>
+    <color name="MediumSlateBlueTransp">#aa7B68EE</color>
     <color name="LightSlateGray">#778899</color>
     <color name="SlateGray">#708090</color>
     <color name="OliveDrab">#6B8E23</color>

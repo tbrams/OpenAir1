@@ -22,14 +22,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    public static final String TAG = "TBR:";
-    public static final int STEP_SIZE = 1;
+    private static final String TAG = "TBR:";
+    private static final int STEP_SIZE = 1;
+    private static final float DEFAULT_LINE_WIDTH = 10f;
+    private static final float SPECIAL_LINE_WIDTH= 25f;
 
     private GoogleMap mMap;
     private LatLng mCenter = null;
     private int mStep_direction = 1;
     private ArrayList<LatLng> mCoordList = new ArrayList<>();
     private int mOutlineColor;
+    private float mOutlineWidth;
+
     private Marker mAirportMarker = null;
 
 
@@ -69,10 +73,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mAirportMarker = mMap.addMarker(new MarkerOptions().position(KRNO).title("KRNO Airport"));
 
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(KRNO, 8));
 
         String[] openAirCommands = {
-                /*
+
                 "* Reno CTR",
                 "AC C",
                 "AN RENO-C",
@@ -81,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 "V X=39:29.9 N 119:46.1 W",
                 "DC 5",
                 "",
+
                 "* Reno TMA xx",
                 "AC C",
                 "V X=39:29.9 N 119:46.1W",
@@ -91,35 +97,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 "DA 5,200,270",
                 "",
 
-                */
-                "AC C",
-                "AN BEALE AFB",
-                "AL SFC",
-                "AH 4100 ft",
-                "V X=39:08.2 N 121:26.2 W",
-                "DC 5",
+
+                "AC R",
+                "AN R-4806 W",
+                "AL 0",
+                "AH UNLIM",
+                "DP 36:41:00 N 115:56:10 W    c29",
+                "DP 37:06:00 N 115:56:10 W    c30",
+                "DP 37:06:00 N 115:35:00 W    c31",
+                "DP 37:16:55 N 115:35:00 W    c32",
+                "DP 37:16:55 N 115:18:10 W    c34",
+                "DP 36:38:08 N 115:18:10 W    c35",
+                "DP 36:25:40 N 115:18:10 W    c36",
+                "DP 36:25:40 N 115:23:20 W    c37",
+                "DP 36:35:00 N 115:37:00 W    c38",
+                "DP 36:35:00 N 115:53:00 W    c39",
+                "DP 36:35:45 N 115:56:10 W    c40",
                 "",
-                "AC C",
-                "AN BEALE AFB",
-                "AL 2600ft",
-                "AH 4100 ft",
-                "AT 39:10.2 N 121:17.2 W",
-                "DA 10,9,130",
-                "V D=-",
-                "DA 5,130,9",
+
+                "AC D",
+                "AN NAS-FALLON",
+                "AL 0",
+                "AH 6400ft",
+                "V X=39:25.0 N 118:42.0 W",
+                "DC 6",
                 "",
-                "AC C",
-                "AN BEALE AFB",
-                "AL 1600ft",
-                "AH 4100 ft",
-                "AT 39:06.2 N 121:35.5 W",
-                "DA 10,130,9",
-                "V D=-5",
-                "DA 5,9,130"
+
+                "AC D",
+                "AN LAKE TAHOE",
+                "AL 0",
+                "AH 8800ft",
+                "V X=38:53.6 N 119:59.7 W",
+                "DC 5"
         };
 
+
         for (String cmd : openAirCommands) {
-            if (cmd.equals("")) {
+            if (cmd.equals("") || cmd.equals("*")) {
 
                 plotAndReset();
             } else {
@@ -144,7 +158,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Use outline only to keep cluttering at a minimum, color of outline is defined by Airspace class
         polyOptions.strokeColor(ContextCompat.getColor(getApplicationContext(), mOutlineColor));
-        //  .fillColor(Color.BLUE);
+        polyOptions.strokeWidth(mOutlineWidth);
 
         // Display polygon
         Polygon polygon = mMap.addPolygon(polyOptions);
@@ -152,6 +166,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Reset internal storage
         mCoordList = new ArrayList<>();
         mOutlineColor = R.color.Yellow;
+        mOutlineWidth=DEFAULT_LINE_WIDTH;
     }
 
 
@@ -219,12 +234,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d(TAG, "parseCommand: Airspace Class");
 
                     mOutlineColor = R.color.Yellow;
+                    mOutlineWidth=DEFAULT_LINE_WIDTH;
                     if (rest.equals("B")) {
                         mOutlineColor = R.color.DodgerBlue;
                     } else if (rest.equals("C")) {
                         mOutlineColor = R.color.MediumVioletRed;
                     } else if (rest.equals("D")) {
-                        mOutlineColor = R.color.Crimson;
+                        mOutlineColor = R.color.MediumSlateBlue;
+                    } else if (rest.equals("R")) {
+                        mOutlineColor = R.color.MediumSlateBlueTransp;
+                        mOutlineWidth=SPECIAL_LINE_WIDTH;
                     } else {
                         Log.e(TAG, "Airspace argunt problem: " + rest);
                     }
