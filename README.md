@@ -1,5 +1,5 @@
 # OpenAir Command Parser
-OpenAir Airspace and Terrain Description Language
+This is an OpenAir™ Language Parser for Google Maps implemented on the Android platform.
 
 <p align="center">
 <img src="https://cloud.githubusercontent.com/assets/3058746/22985928/969548aa-f3dc-11e6-8e8f-9b37c9cb92ed.png" width="400px" alt="Screenshot" />
@@ -40,15 +40,15 @@ Using this simple language, the topology of the KRNO TMA C airspace can be descr
 ```
 
 That is all it takes for the TMA part of the airspace. Each line in the listing above is a command with some arguments, for example:
-* V is a Variable definition. This is used for center of a circle with "X=coord" and direction of arcs with a "D=+/D=-".
-* DA is short for Draw Arc and takes three arguments, a center, a from angle and a to angle number.
+* V is a Variable definition. This is used for center of a circle with "X=coord" and direction of arcs with a "D" command.
+* DA might be short for "Draw Arc", takes three arguments, a center, a from angle and a to angle.
 
 In other words the KRNO TMA is constructed by connected ARC segments with a center in the X coordinate. 
 First arc is 10 nm and goes clockwise from 270 degrees to 290 degrees, the second is 7nm from center between 290 and 320 and the innermost is 5 nm from center and goes all the way from 200 to 270 counter clockwise.
 
-This is a very appealing approach to compensate for some of the very basic limitations you are bound to run into, 
-if you start looking at practical applications of the Google Maps Polygon tool.
+## Summary
+This simple language is a very appealing approach to compensate for some of the very basic limitations you are bound to run into anyway, if you start looking at practical applications of the Google Maps Polygon tool for Android.
 
-And it works nicely - this is an OpenAir™ parser that will accept most of the commands you need for plotting airspaces, but not all.
+And it works nicely - this OpenAir™ parser will accept most of the commands you need for plotting airspaces, but not all.
 Please feel free to take this project further if you like.
 
