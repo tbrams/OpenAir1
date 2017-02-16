@@ -10,6 +10,7 @@ public class OpenAirFile {
     // This is just a sample subset of what is available in the technical breakdown at soaringweb.org
     // Feel free to parse the files directly...
     private String[] mOpenAirCommands = {
+
             "* Reno CTR",
             "AC C",
             "AN RENO-C",
@@ -61,7 +62,11 @@ public class OpenAirFile {
             "AH 8800ft",
             "V X=38:53.6 N 119:59.7 W",
             "DC 5"
+
     };
+
+
+
 
     public String[] getCommands() {
         return mOpenAirCommands;

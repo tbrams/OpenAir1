@@ -25,10 +25,14 @@ public class OpenAirParser {
     private static final float SPECIAL_LINE_WIDTH= 25f;
 
     private static final String COLOR_UNDEFINED = "#FFFF00";
+    private static final String COLOR_G = "#B0C4DE";   // LightSteelBlue
+    private static final String COLOR_E = "#BA55D3";   // MediumOrchid
     private static final String COLOR_D = "#7B68EE";   // MediumSlateBlue
     private static final String COLOR_C = "#C71585";   // MediumVioletRed
     private static final String COLOR_B = "#1E90FF";   // DodgerBlue
-    private static final String COLOR_R = "#aa7B68EE"; // MediumSlateBlue(Transparent)
+    private static final String COLOR_R = "#CD853F";   // Peru
+    private static final String COLOR_W = "#CD5C5C";   // IndianRed
+    private static final String COLOR_P = "#B22222";   // Firebrick
 
     private GoogleMap mMap;
     private LatLng mCenter = null;
@@ -56,7 +60,9 @@ public class OpenAirParser {
         // Go through each line of input and process the commands accordingly.
         for (String cmd : openAirCommands) {
             if (cmd.equals("") || cmd.equals("*")) {
-                plotAndReset();
+                if (mCoordList.size()>0) {
+                    plotAndReset();
+                }
             } else {
                 parseCommand(cmd);
             }
@@ -133,7 +139,7 @@ public class OpenAirParser {
     public void parseCommand(String cmd) {
 
         // First pattern matches two groups - the main command and the rest of the line
-        String pattern = "(AN|AC|AL|AH|DC|DA|DP|V|\\*) ([\\w\\d\\s\\:\\.\\=\\+\\-\\,]*)";
+        String pattern = "(AN|AC|AL|AH|DC|DA|DP|DB|V|\\*) ([\\w\\d\\s\\:\\.\\=\\+\\-\\,]*)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(cmd);
 
@@ -167,8 +173,18 @@ public class OpenAirParser {
                         mOutlineColor = COLOR_C;
                     } else if (rest.equals("D")) {
                         mOutlineColor = COLOR_D;
+                    } else if (rest.equals("E")) {
+                        mOutlineColor = COLOR_E;
+                    } else if (rest.equals("G")) {
+                        mOutlineColor = COLOR_G;
                     } else if (rest.equals("R")) {
                         mOutlineColor = COLOR_R;
+                        mOutlineWidth=SPECIAL_LINE_WIDTH;
+                    } else if (rest.equals("W")) {
+                        mOutlineColor = COLOR_W;
+                        mOutlineWidth=SPECIAL_LINE_WIDTH;
+                    } else if (rest.equals("P")) {
+                        mOutlineColor = COLOR_P;
                         mOutlineWidth=SPECIAL_LINE_WIDTH;
                     } else {
                         Log.e(TAG, "Airspace argument problem: " + rest);
@@ -202,8 +218,8 @@ public class OpenAirParser {
                 case "DC":
                     Log.d(TAG, "parseCommand: Draw Circle");
 
-                    // Draw Circle command - expect an integer argument
-                    radius = Integer.parseInt(rest) * 1852;
+                    // Draw Circle command - expect an decimal argument
+                    radius = (int)(Double.parseDouble(rest) * 1852);
                     pos = null;
                     if (mCenter != null) {
                         for (int deg = 0; deg < 360; deg++) {
@@ -315,8 +331,8 @@ public class OpenAirParser {
                         Log.d(TAG, "parseCommand: Got two coordinates : " + pos1 + " and " + pos2);
 
                         if (pos1 != null && pos2 != null) {
-                            fromDeg = (int) SphericalUtil.computeHeading(mCenter, pos1);
-                            toDeg = (int) SphericalUtil.computeHeading(mCenter, pos2);
+                            fromDeg = ((int) SphericalUtil.computeHeading(mCenter, pos1)+360)%360;
+                            toDeg = ((int) SphericalUtil.computeHeading(mCenter, pos2)+360)%360;
                             radius = (int) SphericalUtil.computeDistanceBetween(mCenter, pos1);
                             drawArcFromTo(radius, fromDeg, toDeg);
                         }
