@@ -2,7 +2,7 @@
 This is an OpenAir™ Language Parser for Google Maps implemented on the Android platform.
 
 ## Background
-After making simple Airspace polygons in my Flight Planning app for a while, I discovered that many airspaces are not just a list of corners in a polygon and therefore not hard to include using the standard Google Maps Polygon.
+After making simple Airspace polygons in my Flight Planning app for a while, I discovered that many airspaces are not just a list of corners in a polygon and therefore hard, if not impossible, to include using the standard Google Maps Polygon.
 <p/>
 Take for example this example from skyvector.com. This is the Reno, Nevada (KRNO) airspace. Good luck trying to digitize this and manually add all this as coordinates into PolygonOptions. Needless to say, that will be very cumbersome, if not impossible. 
 <p align="center">
