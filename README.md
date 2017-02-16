@@ -41,12 +41,13 @@ That is all it takes for the TMA part of the airspace. Each line in the listing 
 In other words the KRNO TMA is constructed by connected ARC segments with a center in the X coordinate. 
 First arc is 10 nm and goes clockwise from 270 degrees to 290 degrees, the second is 7nm from center between 290 and 320 and the innermost is 5 nm from center and goes all the way from 200 to 270 counter clockwise.
 
-<p align="center">
-<img width="603" alt="screenshot 2017-02-16 14 36 56" src="https://cloud.githubusercontent.com/assets/3058746/23011831/a5b644f0-f455-11e6-93f7-900f49919adf.png">
-</p>
 
 ## Summary
 This simple language is a very appealing approach to compensate for some of the very basic limitations you are bound to run into anyway, if you start looking at practical applications of the Google Maps Polygon tool for Android.
+
+<p align="center">
+<img width="603" alt="screenshot 2017-02-16 14 36 56" src="https://cloud.githubusercontent.com/assets/3058746/23011831/a5b644f0-f455-11e6-93f7-900f49919adf.png">
+</p>
 
 And it works nicely - this OpenAir™ parser will accept most of the commands you need for plotting airspaces, but not all.
 Please feel free to take this project further if you like.
