@@ -1,4 +1,4 @@
-# OpenAir Command Parser
+# OpenAir™ Command Parser
 This is an OpenAir™ Language Parser for Google Maps implemented on the Android platform.
 
 ## Background
@@ -51,3 +51,24 @@ This simple language is a very appealing approach to compensate for some of the 
 
 And it works nicele. Note that this OpenAir™ parser will accept most of the commands you need for plotting airspaces, but obviously not all of them - please feel free to take this project further if you like.
 
+## Usage
+Just make sure you have the OpenAirParser class in your project and you can do all you need from the onMapReady callback function like below. I have my OpenAir™ commands in a separate class in this example, but feel free to read from file or use your own provider for this.
+
+```java
+...
+   @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        OpenAirParser openAirParser = new OpenAirParser(getApplicationContext(), mMap);
+
+        // Focus the map in Reno, Nevada using the parse coordinate utility from OpenAirParser
+        LatLng locKRNO = openAirParser.parseCoordinateString("39:29.9 N 119:46.1W");
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locKRNO, 8));
+
+        // Get the sample input file, and display the processed content on the map
+        OpenAirFile openAirFile = new OpenAirFile();
+        openAirParser.parseCommands(openAirFile.getCommands());
+    }
+    ... 
+```
