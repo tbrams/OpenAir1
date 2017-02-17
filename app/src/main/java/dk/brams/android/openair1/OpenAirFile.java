@@ -62,7 +62,6 @@ public class OpenAirFile {
             "AH 8800ft",
             "V X=38:53.6 N 119:59.7 W",
             "DC 5"
-
     };
 
 

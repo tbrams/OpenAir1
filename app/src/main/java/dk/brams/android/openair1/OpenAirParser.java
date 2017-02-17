@@ -25,14 +25,14 @@ public class OpenAirParser {
     private static final float SPECIAL_LINE_WIDTH= 25f;
 
     private static final String COLOR_UNDEFINED = "#FFFF00";
-    private static final String COLOR_G = "#B0C4DE";   // LightSteelBlue
-    private static final String COLOR_E = "#BA55D3";   // MediumOrchid
-    private static final String COLOR_D = "#7B68EE";   // MediumSlateBlue
-    private static final String COLOR_C = "#C71585";   // MediumVioletRed
     private static final String COLOR_B = "#1E90FF";   // DodgerBlue
+    private static final String COLOR_C = "#C71585";   // MediumVioletRed
+    private static final String COLOR_D = "#7B68EE";   // MediumSlateBlue
+    private static final String COLOR_E = "#BA55D3";   // MediumOrchid
+    private static final String COLOR_G = "#B0C4DE";   // LightSteelBlue
     private static final String COLOR_R = "#CD853F";   // Peru
-    private static final String COLOR_W = "#CD5C5C";   // IndianRed
     private static final String COLOR_P = "#B22222";   // Firebrick
+    private static final String COLOR_W = "#CD5C5C";   // IndianRed
 
     private GoogleMap mMap;
     private LatLng mCenter = null;
@@ -59,7 +59,7 @@ public class OpenAirParser {
     public void parseCommands(String[] openAirCommands) {
         // Go through each line of input and process the commands accordingly.
         for (String cmd : openAirCommands) {
-            if (cmd.equals("") || cmd.equals("*")) {
+            if (cmd.equals("") || cmd.trim().charAt(0)=='*') {
                 if (mCoordList.size()>0) {
                     plotAndReset();
                 }
@@ -171,7 +171,7 @@ public class OpenAirParser {
                         mOutlineColor = COLOR_B;
                     } else if (rest.equals("C")) {
                         mOutlineColor = COLOR_C;
-                    } else if (rest.equals("D")) {
+                    } else if (rest.equals("D") || rest.equals("CTR")) {
                         mOutlineColor = COLOR_D;
                     } else if (rest.equals("E")) {
                         mOutlineColor = COLOR_E;
